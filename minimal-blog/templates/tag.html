@@ -4,7 +4,7 @@ Articles Tagged with {{ tag }}
 {% endblock title %}
 {% block content %}
 {% for article in articles if article.tags and tag in article.tags %}
-<li><a href="{{SITEURL}}/{{ article.url }}">
+<li><a href="{{ article.url }}">
         div class="card mb-3">
         <div class="row g-0">
             <div class="col-md-4">

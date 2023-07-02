@@ -14,7 +14,7 @@
             {% for tag in article.tags %}
 
             <div class="badge bg-primary text-wrap">
-                <a href="{{ SITEURL }}/{{ tag.url }}" class="text-decoration-none text-white">{{tag}}</a>
+                <a href="{{ tag.url }}" class="text-decoration-none text-white">{{tag}}</a>
             </div>
             {% endfor %}
             {% endif %}
