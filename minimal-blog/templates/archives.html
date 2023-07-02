@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ SITENAME }} - Articles{% endblock %}
+
+{% block content %}
+{% include 'nav.html' %}
+<section class="blog-list-group hero-content mt-5" style="flex-direction: column;">
+
+    {% for article in articles %}
+    <a href="{{ SITEURL }}/{{ article.url }}">
+
+        <div class="card mb-3">
+            <div class="row g-0">
+                <div class="col-md-4">
+                    <img src="{{SITEURL}}/theme/images/{{article.banner}}" alt="..." class="img-thumbnail">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">{{article.title}}</h5>
+                        <p class="card-text">{{article.subheading}}</p>
+                        <p class="card-text"><small class="text-body-secondary">{{article.locale_date}}</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+
+</section>
+<footer>
+    <div class="container">
+        <p>&copy; 2023 vivekthedev. &nbsp;
+            Powered by <a href="https://getpelican.com/">Pelican</a></p>
+    </div>
+</footer>
+{% endblock content %}
