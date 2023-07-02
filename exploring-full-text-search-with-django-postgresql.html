@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vivek Kumar Singh</title>
+    <link rel="stylesheet" href="/theme/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/theme/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<nav class="_navbar">
+    <div class="_container">
+        <div class="logo-group">
+            <a href="/"><img src="/theme/images/logo-main.png" alt="vivekthedev"></a>
+        </div>
+        <div class="links-group">
+            <a href="/archives.html">Blog</a>
+            <a href="/projects/">Projects</a>
+            <a href="https://drive.google.com/file/d/1U5ARCKEPvhfoONSnIXYsMaB5IF38evbL/view?usp=drive_link">Resume</a>
+        </div>
+    </div>
+</nav><section class="blog-list-group hero-content mt-5">
+
+    <div class="_container" style="flex-direction: column; align-items: flex-start;">
+
+        <p class="display-4 text-white">Exploring Full-Text Search with Django/PostgreSQL</p>
+        <div class="tags">
+
+            <div class="badge bg-primary text-wrap">
+                <a href="/tag/python.html" class="text-decoration-none text-white">python</a>
+            </div>
+
+            <div class="badge bg-primary text-wrap">
+                <a href="/tag/django.html" class="text-decoration-none text-white">django</a>
+            </div>
+
+            <div class="badge bg-primary text-wrap">
+                <a href="/tag/sql.html" class="text-decoration-none text-white">sql</a>
+            </div>
+        </div>
+
+        <div class="image-container m-5">
+
+            <img src="https://i.imgur.com/r6XewFw.png" class="img-fluid" alt="banner-image">
+        </div>
+
+        <div class="markdown-content text-white">
+            <div class="fs-2 mt-3"></div>
+            <div class="section-content mt-1">
+                <p>In this step-by-step tutorial, you'll learn how to use full-text search in your Django application using the PostgreSQL database. By the end of this article, you will have a thorough understanding of the use of full-text search in your application. This article requires to know the ORM and Queryset functions of Django well.</p>
+<h1>What is Full-Text Search?</h1>
+<p>Before I answer that, let me ask you something. What is the difference between the find feature in a word processor (MS Word, Notepad) and search in Google? Both are searching, but the difference is how they are done. Google takes your query breaks it down into different words and crawls every website to get the relevant results, on the other hand, Find-and-Replace takes your query as a whole and searches for that chunk in a text. The former is a Full-Text search. It breaks down the query and removes unnecessary parts such as in, or, and then returns the most relevant results.</p>
+<h2>Why Full-Text Search?</h2>
+<p>Let's understand the need of a full-text search using a real-life example. Suppose we have two posts with the given title and the user looks for «async in Python».</p>
+<h3>Sample Post title in out app.</h3>
+<div class="highlight"><pre><span></span><code>- Python also supports async function.
+- Async in python is amazing
+</code></pre></div>
+
+<p>The user will only get the second post when searching in normal regular expression search, but we can see that first article is also related to the user's query. That's the reason we need full-text search in our applications.</p>
+<h1>Features of Full-Text Search</h1>
+<ul>
+<li>
+<p>It is much faster.</p>
+</li>
+<li>
+<p>Results are relevant.</p>
+</li>
+<li>
+<p>Better ranking of results.</p>
+</li>
+</ul>
+<h2>Searching in Python</h2>
+<p>Before delving into Full-Text Search, I want to quickly review the normal workings of the SQLite database search.</p>
+<p>Below you will find the repository to obtain the Boilerplate. I created a new project with django called core where I created a new app called a blog. After running <code>python manage.py migrate</code>, add this code into your project.</p>
+<p><strong>blog/models.py</strong> A new model (table) to store content and title of a blog post.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="c1"># Create your models here.</span>
+<span class="k">class</span> <span class="nc">Post</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+
+<p><strong>blog/admin.py</strong> Add Post model in admin site to use Create/Read/Update/Delete operations.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Post</span>
+
+<span class="c1"># Register your models here.</span>
+
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Post</span><span class="p">)</span>
+</code></pre></div>
+
+<p><strong>blog.views.py</strong> Add home view to see all the posts</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Post</span>
+
+<span class="k">def</span> <span class="nf">home</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;query&#39;</span><span class="p">):</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">title__icontains</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;queryset&quot;</span><span class="p">:</span> <span class="n">qs</span><span class="p">})</span>
+</code></pre></div>
+
+<p><strong>core/urls.py</strong> Add a new URL for home view.</p>
+<div class="highlight"><pre><span></span><code>urlpatterns = [
+    path(&quot;admin/&quot;, admin.site.urls),
+    path(&quot;&quot;, views.home),
+]
+</code></pre></div>
+
+<h3>Template to search</h3>
+<p>blog/templates/index.html A template to search and see all the post in the queryset</p>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&quot;en&quot;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&quot;UTF-8&quot;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">&quot;X-UA-Compatible&quot;</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;IE=edge&quot;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;viewport&quot;</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;width=device-width, initial-scale=1.0&quot;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Full Text Search<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">form</span><span class="p">&gt;</span>
+           <span class="cp">{%</span> <span class="k">csrf_token</span> <span class="cp">%}</span>
+          <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text&quot;</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;query&quot;</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;submit&quot;</span> <span class="na">value</span><span class="o">=</span><span class="s">&quot;Search&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">form</span><span class="p">/&gt;</span>
+    <span class="cp">{%</span> <span class="k">for</span> <span class="nv">object</span> <span class="k">in</span> <span class="nv">queryset</span> <span class="cp">%}</span>
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span><span class="cp">{{</span><span class="nv">object.title</span><span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span><span class="cp">{{</span><span class="nv">object.content</span> <span class="o">|</span> <span class="nf">truncatechars</span><span class="o">:</span><span class="m">200</span><span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">empty</span> <span class="cp">%}</span>
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>No Results<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+  <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<p>After adding these changes to your project, launch this command in prompt/terminal.</p>
+<div class="highlight"><pre><span></span><code>python manage.py runserver
+</code></pre></div>
+
+<p>Goto http://127.0.0.1:8000/admin/blog/post/ and add any five posts on any topics like this.</p>
+<p><img alt="Admin Screen" src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/40g94luqkp0lz37s9ykq.png align=" title="left"></p>
+<h2>How ‘title__icontains' works.</h2>
+<p>I searched for bots ant the queryset returned</p>
+<p><img alt="Search results screen when searched bots" src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/83kh1brer0msf71rc6zt.png align=" title="left"></p>
+<p>But If I search <code>python bots</code></p>
+<p><img alt="Search results screen when searched python bots" src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/mns63lxgtoy1tj6p2gbj.png align=" title="left"></p>
+<p>No result since I have no specific term 'python bots' in the title of the post.</p>
+<p>Let's correct that with the full text search.</p>
+<h1>How to use PostgreSQL in Django?</h1>
+<p>Full text is only possible in an advance production ready database like PostgreSQL. We can use the PostgreSQL database within our Django app by downloading the database locally or using an online database as a service. For this tutorial we will use a service called <a href="https://www.elephantsql.com/">ElephantSQL</a>, a PostgreSQL as a Service.</p>
+<p>Steps we have to follow:</p>
+<ul>
+<li>
+<p>Create a remote PostgreSQL Database</p>
+</li>
+<li>
+<p>Connect this Database to Django project.</p>
+<ul>
+<li>
+<p>Change settings to include postgresql db backend</p>
+</li>
+<li>
+<p>Install psycopg2 to talk with PostgreSQL using Python</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Create a fresh account on this website and then select Tiny Turtle Plan (Free/Slow). Once you create a new instance you will get this page.</p>
+<p><img alt="Instance Screen in ElephantSQL" src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/hqcm0o9ijk7c91jltu08.png align=" title="left"></p>
+<p>Copy the URL because that is the only thing you need to connect this database to your local Django Application.</p>
+<p>Make the following changes in your settings file core/settings.py</p>
+<div class="highlight"><pre><span></span><code><span class="o">...</span><span class="p">..</span>
+
+<span class="nx">INSTALLED_APPS</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s">&quot;django.contrib.admin&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;django.contrib.auth&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;django.contrib.contenttypes&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;django.contrib.sessions&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;django.contrib.messages&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;django.contrib.staticfiles&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s">&quot;django.contrib.postgres&quot;</span><span class="p">,</span><span class="w">                  </span><span class="err">#</span><span class="nx">THIS</span><span class="w"> </span><span class="nx">APP</span>
+<span class="w">    </span><span class="s">&quot;blog&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="o">...</span><span class="p">..</span>
+<span class="nx">DATABASES</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="err">#</span><span class="w"> </span><span class="nx">My</span><span class="w"> </span><span class="nx">URL</span>
+<span class="w">        </span><span class="err">#</span><span class="w"> </span><span class="nx">postgres</span><span class="p">:</span><span class="c1">//tdjcpial:7UglyA2MM16ksuez2ICeDxfxZjlQnj9X@salt.db.elephantsql.com/tdjcpial</span>
+<span class="w">        </span><span class="err">#</span><span class="w"> </span><span class="nx">Change</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">below</span><span class="w"> </span><span class="nx">settings</span><span class="w"> </span><span class="nx">according</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">your</span><span class="w"> </span><span class="nx">Copied</span><span class="w"> </span><span class="nx">URL</span><span class="p">.</span>
+<span class="w">        </span><span class="s">&quot;ENGINE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;django.db.backends.postgresql&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s">&quot;NAME&quot;</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tdjcpial&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s">&quot;USER&quot;</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;tdjcpial&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s">&quot;PASSWORD&quot;</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;7UglyA2MM16ksuez2ICeDxfxZjlQnj9X&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="s">&quot;HOST&quot;</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;salt.db.elephantsql.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+<span class="o">...</span><span class="p">..</span>
+</code></pre></div>
+
+<p>After this change we need to install db adapter psycopg2 using <code>pip install psycopg2</code></p>
+<p>Now our database is fully connected, to use this data base from the admin site run <code>python manage.py migrate</code> and then <code>python manage.py createsuperuser</code></p>
+<p>You can now create new posts in this database to test the full-text functionality.</p>
+<h2>To achieve full-text search we need to do the following steps:</h2>
+<ul>
+<li>
+<p>Parsing Query</p>
+</li>
+<li>
+<p>Parsing Content/Data</p>
+</li>
+</ul>
+<p>open blog/views.py and add the following code then we will go through it line by line.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">django.contrib.postgres.search</span> <span class="kn">import</span> <span class="n">SearchVector</span><span class="p">,</span> <span class="n">SearchQuery</span>
+
+<span class="c1"># Create your views here.</span>
+
+
+<span class="k">def</span> <span class="nf">home</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span><span class="p">:</span>
+        <span class="c1"># qs = Post.objects.filter(title__icontains=query)</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">SearchVector</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">search</span><span class="o">=</span><span class="n">SearchQuery</span><span class="p">(</span><span class="n">query</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;queryset&quot;</span><span class="p">:</span> <span class="n">qs</span><span class="p">})</span>
+</code></pre></div>
+
+<p>In the above code we commented out i_contains, and added full-text search class provided by the Django PostgreSQL backend.</p>
+<p>Let's understand what each class is doing:</p>
+<ul>
+<li>
+<p>SearchVector(*fields) : This class processes the data from which the query needs to be searched, this class runs ts_vector function form the PostgreSQL to break down words into tokens and assigning type to each token.</p>
+</li>
+<li>
+<p>SearchQuery(query) : This class processes the user provided query to achieve full-text search by breaking query into tokens and removing unnecessary parts from the query like punctuation marks(, ! ?) and words like this(and, or, either).</p>
+</li>
+</ul>
+<p>The annotate function creates a new temporary column in a table with values SearchVector(title, content), which means that we want to search both the fields for our query. The filter is then filter out those rows which has the query in their search column.</p>
+<p>Let's test what we get after adding this change to our view.</p>
+<p><img alt="Search results screen when searched python bots using full text saerch" src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/hjgvxdgl5ffh62205ksz.png align=" title="left"></p>
+<p>VOILA! Remember earlier we were not getting any results on <code>python bots</code> but now our app is showing some relevant post to our query.</p>
+<h1>There's more to it:</h1>
+<h3>SearchHeadline() :</h3>
+<p>This class is used to highlight the results if your query matches with the content, the first parameter determines where we need to highlight in this case, the content, the second parameter takes SearchQuery(query), which we already discussed and the third and fourth shows when the matching tokens are found then how should we enclose them, in this case we used bold, italic and underline tags. Add the following code to your blog/views.py</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Post</span>
+<span class="kn">from</span> <span class="nn">django.contrib.postgres.search</span> <span class="kn">import</span> <span class="n">SearchVector</span><span class="p">,</span> <span class="n">SearchQuery</span><span class="p">,</span> <span class="n">SearchHeadline</span>
+
+<span class="c1">## Create your views here.</span>
+
+
+<span class="k">def</span> <span class="nf">home</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span><span class="p">:</span>
+        <span class="c1"># qs = Post.objects.filter(title__icontains=query)</span>
+        <span class="c1"># qs = Post.objects.annotate(search=SearchVector(&quot;title&quot;, &quot;content&quot;)).filter(</span>
+        <span class="c1">#     search=SearchQuery(query)</span>
+        <span class="c1"># )</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">Post</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="n">headline</span><span class="o">=</span><span class="n">SearchHeadline</span><span class="p">(</span>
+                <span class="s2">&quot;content&quot;</span><span class="p">,</span>
+                <span class="n">SearchQuery</span><span class="p">(</span><span class="n">query</span><span class="p">),</span>
+                <span class="n">start_sel</span><span class="o">=</span><span class="s2">&quot;&lt;b&gt;&lt;u&gt;&lt;i&gt;&quot;</span><span class="p">,</span>
+                <span class="n">stop_sel</span><span class="o">=</span><span class="s2">&quot;&lt;/i&gt;&lt;/u&gt;&lt;/b&gt;&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">render</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s2">&quot;index.html&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;queryset&quot;</span><span class="p">:</span> <span class="n">qs</span><span class="p">})</span>
+</code></pre></div>
+
+<p>For this to work we need to change our template file just a bit.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span> <span class="na">lang</span><span class="o">=</span><span class="s">&quot;en&quot;</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">charset</span><span class="o">=</span><span class="s">&quot;UTF-8&quot;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">http-equiv</span><span class="o">=</span><span class="s">&quot;X-UA-Compatible&quot;</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;IE=edge&quot;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">meta</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;viewport&quot;</span> <span class="na">content</span><span class="o">=</span><span class="s">&quot;width=device-width, initial-scale=1.0&quot;</span> <span class="p">/&gt;</span>
+    <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>Full Text Search<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>
+      <span class="p">&lt;</span><span class="nt">form</span><span class="p">&gt;</span>
+           <span class="cp">{%</span> <span class="k">csrf_token</span> <span class="cp">%}</span>
+          <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;text&quot;</span> <span class="na">name</span><span class="o">=</span><span class="s">&quot;query&quot;</span><span class="p">&gt;</span>
+          <span class="p">&lt;</span><span class="nt">input</span> <span class="na">type</span><span class="o">=</span><span class="s">&quot;submit&quot;</span> <span class="na">value</span><span class="o">=</span><span class="s">&quot;Search&quot;</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">form</span><span class="p">/&gt;</span>
+    <span class="cp">{%</span> <span class="k">for</span> <span class="nv">object</span> <span class="k">in</span> <span class="nv">queryset</span> <span class="cp">%}</span>
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span><span class="cp">{{</span><span class="nv">object.title</span><span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span><span class="cp">{{</span><span class="nv">object.headline</span> <span class="o">|</span> <span class="nf">safe</span><span class="cp">}}</span><span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">empty</span> <span class="cp">%}</span>
+    <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>No Results<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>
+    <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+  <span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></div>
+
+<p>Lets take a look:</p>
+<p><img alt="full text search headline example" src="https://dev-to-uploads.s3.amazonaws.com/uploads/articles/fid0g9xrj114pjck6npa.png align=" title="left"></p>
+<p>We changed <code>{{object.content}}</code> to <code>{{object.headline}}</code> and added safe template tag filter so our HTML <code>&lt;b&gt;&lt;u&gt;&lt;i&gt;query&lt;/i&gt;&lt;/u&gt;&lt;/b&gt;</code> get executed.</p>
+<p>See how our query get a bold and itallic.</p>
+<h1>Conclusion</h1>
+<p>For any further information and documentation:</p>
+<ul>
+<li>
+<p><a href="https://docs.djangoproject.com/en/4.0/ref/contrib/postgres/search/">Django Full Text</a></p>
+</li>
+<li>
+<p><a href="https://www.postgresql.org/docs/current/textsearch-controls.html">PostgreSQL Documentation</a></p>
+</li>
+</ul>
+<p><a href="https://github.com/vivekthedev/full-text-search-blog-example">GitHub Code Repository</a>, I'm not changing the settings of my database, in case you want to fiddle with the data.</p>
+<p>If you liked the article also consider checking me out on <a href="https://twitter.com/vivekthedev/">Twitter</a> where I post stuff like this in under 280 characters daily.</p>
+            </div>
+        </div>
+    </div>
+
+</section>
+<footer>
+    <div class=" container">
+        <p>&copy; 2023 vivekthedev. &nbsp;
+            Powered by <a href="https://getpelican.com/">Pelican</a></p>
+    </div>
+</footer>
+</body>
+
+</html>
