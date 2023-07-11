@@ -1,7 +1,6 @@
 AUTHOR = 'Vivek K. Singh'
 SITENAME = 'Vivek Kumar Singh'
 SITEURL = ''
-REPNAME = ''
 PATH = 'content'
 
 TIMEZONE = 'Asia/Kolkata'
