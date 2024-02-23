@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-VRYJ4KPP1R"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-VRYJ4KPP1R');
+    </script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vivek Kumar Singh</title>
+    <link rel="stylesheet" href="/theme/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/theme/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+</head>
+
+
+<body>
+
+<nav class="_navbar">
+    <div class="_container">
+        <div class="logo-group">
+            <a href="/"><img src="/theme/images/logo-main.png" alt="vivekthedev"></a>
+        </div>
+        <div class="links-group">
+            <a href="/archives.html">Blog</a>
+            <a href="/pages/guest.html">Guest Posts</a>
+            <a href="/pages/projects.html">Projects</a>
+            <a href="https://drive.google.com/file/d/1Oq7P6G1bHk9O79v5YRxQgw-F-4e5c1qJ/view?usp=drive_link">Resume</a>
+        </div>
+    </div>
+</nav><section class="blog-list-group hero-content mt-5">
+
+    <div class="_container" style="flex-direction: column; align-items: flex-start;">
+
+        <p class="display-4 text-white">Effortless Database Migrations: Why Alembic is Your Python Must-Have</p>
+        <div class="tags">
+
+            <div class="badge bg-primary text-wrap">
+                <a href="tag/python.html" class="text-decoration-none text-white">python</a>
+            </div>
+
+            <div class="badge bg-primary text-wrap">
+                <a href="tag/fastapi.html" class="text-decoration-none text-white">fastapi</a>
+            </div>
+
+            <div class="badge bg-primary text-wrap">
+                <a href="tag/sqlalchemy.html" class="text-decoration-none text-white">sqlalchemy</a>
+            </div>
+
+            <div class="badge bg-primary text-wrap">
+                <a href="tag/alembic.html" class="text-decoration-none text-white">alembic</a>
+            </div>
+        </div>
+
+        <div class="image-container m-5">
+
+            <img src="https://i.imgur.com/Bkusf16.png" class="img-fluid" alt="banner-image">
+        </div>
+
+        <div class="markdown-content text-white">
+            <div class="fs-2 mt-3"></div>
+            <div class="section-content mt-1">
+                <p>SQL databases operate by defining specific fields, data types, and relationships across various models. These characteristics make SQL databases ideal for tasks like data science and record management. In Python-based web applications, SQL databases are commonly chosen, especially with Object Relational Manager (ORM) tools like SQLAlchemy. These tools facilitate the creation, querying, and modification of SQL models using Python.</p>
+<p>However, altering a production database after it’s been defined can be difficult. Frameworks such as Django provide their own database migration systems to simplify and streamline this process. It introduces various checks to ensure database updates are performed smoothly. But, Python Frameworks such as Flask and FastAPI do not come with their own database migration system, this is where Alembic comes into play.  <a href="https://alembic.sqlalchemy.org/en/latest/">Alembic</a> is a database Migration system for usage with the SQLAlchemy Database Toolkit.</p>
+<p>It allows you to make changes to your databases structure in a secure way using only Python without writing a single SQL statement. Additionally, with Alembic you can rollback to the previous version of your database definition with just a few commands. Alembic make migrations in Database really easy with intuitive syntax. It make easier to evolve our database with our application.</p>
+<p>In this tutorial, you will learn to use Alembic in a FastAPI application. We will cover most important features like upgrade, downgrade, addcolumn and dropcolumn to enhance our FastAPI application. For this tutorial, we have already created a sample application in FastAPI which has a CRUD functionality on a book table having the following fields.</p>
+<div class="highlight"><pre><span></span><code><span class="n">id</span><span class="o">:</span><span class="w"> </span><span class="n">int</span><span class="w">  </span>
+<span class="n">title</span><span class="o">:</span><span class="w"> </span><span class="n">string</span><span class="w">  </span>
+<span class="n">rating</span><span class="o">:</span><span class="w"> </span><span class="n">integer</span><span class="w">  </span>
+<span class="n">price</span><span class="o">:</span><span class="w"> </span><span class="n">float</span><span class="w">  </span>
+<span class="n">published</span><span class="o">:</span><span class="w"> </span><span class="n">boolean</span>
+</code></pre></div>
+
+<h1>Setting Up the starter code</h1>
+<h2>Cloning Application from GitHub</h2>
+<p>In order to setup the starter application, you have to first clone the application in your local directory using this command:</p>
+<p><code>git clone https://github.com/vivekthedev/blog-tuts.git</code></p>
+<h2>Creating virtual environment</h2>
+<p>Once you have the application on your system, create a python virtual environment in order to isolote the dependencies from the system site packages. You can create a virtual environment using the following command:</p>
+<p><code>python -m venv env</code></p>
+<p>After running the above command, run  <code>env\Scripts\activate</code>  if you are on Windows else run  <code>source env/bin/activate</code>  if you are on Mac/Linux in order to activate your virtual environment.</p>
+<h2>Installing Dependencies</h2>
+<p>Once you activate the virtual envrironment you can install dependencies present in  <code>requirements.txt</code>  file by running  <code>pip install -r requirements.txt</code>  command.</p>
+<h2>Running and Testing Starter Application</h2>
+<p>At this point you are ready to run and test the application. In the same terminal, run  <code>uvicorn main:app --reload</code>  to start the application on the default address of http://127.0.0.1:8000/ , visit http://127.0.0.1:8000/docs to test your application on the Swagger UI.</p>
+<p><img alt="" src="https://miro.medium.com/v2/resize:fit:875/1*8FvjKiu1P0HiG6W4_12HDA.png"></p>
+<h1>What are Database Migrations?</h1>
+<p>As mentioned earlier, SQL databases have a strict structure with predefined rows and columns, which makes altering the database more challenging. For application developers, this process may require writing SQL statements, ensuring constraints like NOT NULL or UNIQUE are met, and specifying DEFAULT values. Moreover, if issues arise during the update process, reverting to the previous database state can be difficult, especially if TRANSACTION command aren’t explicitly defined when executing SQL statements.</p>
+<p>Alembic solves this problem by providing an easier and intuitive way to evolve your database without writing any line of SQL code. Additionally, working with Alembic is much easier compared to manually changing database structure through SQL or via GUI application.</p>
+<p>Each database update is stored in a Python file, providing flexibility to customize as needed. Reverting to a specific database state is as easy as executing a simple command, making the process more manageable and efficient.</p>
+<h1>Working with Alembic</h1>
+<p>To start working with Alembic, you first need to install Alembic using the following command. Also make sure to run the command in the same virtual environment as you FastAPI starter application:</p>
+<p><code>pip install alembic</code></p>
+<p>Once you install Alembic, you now have a alembic Command Line Tool to configure your database. To integrate Alembic with your project run the following command in the same terminal:</p>
+<p><code>alembic init alembic-conf</code></p>
+<p>The above command creates a directory named  <code>alembic-conf</code>  in your project directory and generates the following files:</p>
+<ul>
+<li><code>alembic-conf/versions/</code>  : This directory stores various versions of your database, you will use this directory in order to examine or update various states of your database.</li>
+<li><code>alembic-conf/env.py</code>  : This file is used by alembic to run migrations, it defines how the migrations should be made on the database.</li>
+<li><code>alembic-conf/script.py.mako</code>  : It is a template file which is used to create new database versions in the versions directory. In other words every file/migration in versions directory is created using this template file.</li>
+<li><code>alembic-conf/README</code>  : Contains information about the projects or the alembic. You can use it as changelog or writing something informative about the project.</li>
+<li><code>alembic.ini</code>  : This is the configuration file where you define you various setting in order to configure your migration process.</li>
+</ul>
+<h2>Configuring Database with Alembic</h2>
+<p>To enable Alembic to make changes to your Database, it requires knowledge of the location of your database service, which is defined by the  <code>SQLALCHEMY_DATABASE_URL</code>. To do this, locate the  <code>database.py</code>file within your project and copy the value  <code>sqlite:///books.sqlite3</code>  . Then, navigate to Line 63 of the  <code>alembic.ini</code>  file and paste this value just after the variable  <code>sqlalchemy.url</code>. Make sure to NOT enclose it in quotes .</p>
+<p>Now open  <code>alembic-conf/env.py</code> file, and populate it with the following code:</p>
+<p>import sys<br>
+import models <br>
+sys.path.append("..")</p>
+<p>After the above imports find the  <code>target_metadata</code>  variable and set it to  <code>models.Base.metadata</code>  .</p>
+<p>Once you set up the above two configurations successfully, you are now ready to create you alembic revisions in order to make changes in your database.</p>
+<h2>Creating Alembic Revisions</h2>
+<p>For your first Alembic revision, you will create a new column in your Books table named  <code>Description</code>  which should be of type String. In order to create a revision file, open the terminal and type the following command.</p>
+<div class="highlight"><pre><span></span><code>alembic revision -m &quot;create book description&quot;
+</code></pre></div>
+
+<p>After running the above command, you will see that a new file with the name  <code>“&lt;hash_value&gt;_create_book_description.py”</code>  has been created. This file will contain our revision logic which we will define in  <code>upgrade()</code> function in the file.</p>
+<p>Open the newly created file and in the  <code>upgrade()</code>  function type the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="n">def</span><span class="w"> </span><span class="n">upgrade</span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">None</span><span class="o">:</span><span class="w">  </span>
+<span class="w">    </span><span class="n">op</span><span class="p">.</span><span class="n">add_column</span><span class="p">(</span><span class="s">&#39;books&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">sa</span><span class="p">.</span><span class="n">Column</span><span class="p">(</span><span class="s">&#39;description&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">sa</span><span class="p">.</span><span class="n">String</span><span class="p">(),</span><span class="w"> </span><span class="n">server_default</span><span class="o">=</span><span class="s">&quot;A short Description&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">nullable</span><span class="o">=</span><span class="kr">False</span><span class="p">)</span>
+</code></pre></div>
+
+<p>In the provided code, you’ve created a new revision that, when applied, adds a new column named ‘description’ of type string with a default value of “A short description”. It’s considered good practice to define the downgrade() function at the same time as the upgrade() function to ensure a smooth downgrading process in the future.</p>
+<p>To implement this, in the downgrade() function, we will reverse the actions performed in the upgrade() function, which in this case involves removing the ‘description’ column from the ‘books’ table. To achieve this, type the following code inside the downgrade() function:</p>
+<div class="highlight"><pre><span></span><code><span class="n">def</span><span class="w"> </span><span class="n">downgrade</span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">None</span><span class="o">:</span><span class="w">  </span>
+<span class="w">  </span><span class="n">op</span><span class="p">.</span><span class="n">drop_column</span><span class="p">(</span><span class="s">&#39;books&#39;</span><span class="p">,</span><span class="w"> </span><span class="s">&#39;description&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>This code will instruct Alembic to remove the ‘description’ column from the ‘books’ table when the downgrade process is initiated.</p>
+<p>In this file, you can see another variable  <code>revision</code>  which contains the hash value of the revision file. Copy this value as it will be useful when applying the revisions to the database.</p>
+<h2>Applying Revisions</h2>
+<p>We have successfully created revision to make changes in the database, in order to apply these changes run the following command in your terminal:</p>
+<div class="highlight"><pre><span></span><code>alembic upgrade &lt;hash_value&gt;
+</code></pre></div>
+
+<p>Note that “<code>&lt;hash_value&gt;</code>” should be replaced with the hash value of your revision file, which you copied in the previous section. When you execute this command, you will receive confirmation messages indicating that your revisions have been applied successfully:</p>
+<div class="highlight"><pre><span></span><code><span class="nx">INFO</span><span class="w">  </span><span class="p">[</span><span class="nx">alembic</span><span class="p">.</span><span class="nx">runtime</span><span class="p">.</span><span class="nx">migration</span><span class="p">]</span><span class="w"> </span><span class="nx">Context</span><span class="w"> </span><span class="kd">impl</span><span class="w"> </span><span class="nx">SQLiteImpl</span><span class="p">.</span><span class="w">  </span>
+<span class="nx">INFO</span><span class="w">  </span><span class="p">[</span><span class="nx">alembic</span><span class="p">.</span><span class="nx">runtime</span><span class="p">.</span><span class="nx">migration</span><span class="p">]</span><span class="w"> </span><span class="nx">Will</span><span class="w"> </span><span class="nx">assume</span><span class="w"> </span><span class="nx">non</span><span class="o">-</span><span class="nx">transactional</span><span class="w"> </span><span class="nx">DDL</span><span class="p">.</span><span class="w">  </span>
+<span class="nx">INFO</span><span class="w">  </span><span class="p">[</span><span class="nx">alembic</span><span class="p">.</span><span class="nx">runtime</span><span class="p">.</span><span class="nx">migration</span><span class="p">]</span><span class="w"> </span><span class="nx">Running</span><span class="w"> </span><span class="nx">upgrade</span><span class="w">  </span><span class="o">-&gt;</span><span class="w"> </span><span class="nx">e9cbb68b0547</span><span class="p">,</span><span class="w"> </span><span class="nx">create</span><span class="w"> </span><span class="nx">book</span><span class="w"> </span><span class="nx">description</span>
+</code></pre></div>
+
+<p>To verify that the changes have been applied to our database, we can run the application using the following command:</p>
+<div class="highlight"><pre><span></span><code><span class="n">uvicorn</span><span class="w"> </span><span class="n">main</span><span class="p">:</span><span class="n">app</span><span class="w"> </span><span class="o">--</span><span class="n">reload</span>
+</code></pre></div>
+
+<p>After that, proceed to  <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a>  to view the books stored in our database. However, you may notice that the models do not display the newly created ‘description’ field for the book. This is because FastAPI fetches all model information from the  <code>models.py</code>  file. To ensure FastAPI fetches the ‘description’ field as well, you need to add a new line in the models.py file. Open the models.py file and append this line at the end of the model:</p>
+<div class="highlight"><pre><span></span><code><span class="n">class</span><span class="w"> </span><span class="nf">Books</span><span class="p">(</span><span class="n">Base</span><span class="p">)</span><span class="o">:</span><span class="w">  </span>
+<span class="w">    </span>__<span class="n">tablename__</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;books&quot;</span><span class="w">  </span>
+<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span><span class="w"> </span><span class="n">primary_key</span><span class="o">=</span><span class="n">True</span><span class="p">,</span><span class="w"> </span><span class="n">index</span><span class="o">=</span><span class="n">True</span><span class="p">)</span><span class="w">  </span>
+<span class="w">    </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span><span class="w">  </span>
+<span class="w">    </span><span class="n">price</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="n">Float</span><span class="p">)</span><span class="w">  </span>
+<span class="w">    </span><span class="n">author</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span><span class="w">  </span>
+<span class="w">    </span><span class="n">rating</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">)</span><span class="w">  </span>
+<span class="w">    </span><span class="n">published</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="n">Boolean</span><span class="p">)</span><span class="w">  </span>
+<span class="w">    </span><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">Column</span><span class="p">(</span><span class="n">String</span><span class="p">)</span><span class="w"> </span><span class="c1"># &lt;- This line</span>
+</code></pre></div>
+
+<p>Now open the  <a href="http://127.0.0.1:8000/">http://127.0.0.1:8000/</a>, you will see the following output:
+<img alt="" src="https://miro.medium.com/v2/resize:fit:660/1*Je0NtB_bWm3mpvvKAuUVMw.png">
+You can also use  <code>sqlite3</code>  command line tool or  <a href="https://inloop.github.io/sqlite-viewer/">SQL Viewer</a>  tool in order to inspect changes in your database.</p>
+<p>With that, you have successfully created and applied your very first migration using Alembic. This functionality proves to be highly useful for a production-level application, as it allows for seamless database schema modifications.</p>
+<p>For your next migration, the objective is to create a new table called ‘reviews’. This next part will serve as a learning opportunity to understand how to create a new table using Alembic Operations. Eventually, we will remove this table to demonstrate the downgrade functionality of Alembic, showcasing its ability to rollback changes.</p>
+<h1>Creating Table with Alembic</h1>
+<p>In order to create a new revision, open the terminal and type the following following command:</p>
+<div class="highlight"><pre><span></span><code>alembic revision -m &quot;create reviews table&quot;
+</code></pre></div>
+
+<p>A new file with the name  <code>&lt;hash_value&gt;_create_reviews_table</code>  should now be generated in the “alembic-conf/versions” directory. Open this file, and you’ll notice that it contains a variable called “down_revision” with a value corresponding to the hash value of the previous migration file. This setup makes it easy to track our migrations and ensures that Alembic can keep the upgrade and downgrade processes in sync.</p>
+<h2>Upgrade and Downgrade function</h2>
+<p>Now let’s create Operations for creating a new table. Open the newly created migration file and populate the  <code>upgrade</code>  function with the following code:</p>
+<div class="highlight"><pre><span></span><code><span class="n">def</span><span class="w"> </span><span class="n">upgrade</span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">None</span><span class="o">:</span><span class="w">  </span>
+<span class="w">    </span><span class="n">op</span><span class="p">.</span><span class="n">create_table</span><span class="p">(</span><span class="w">  </span>
+<span class="w">        </span><span class="s">&quot;reviews&quot;</span><span class="p">,</span><span class="w">  </span>
+<span class="w">        </span><span class="n">sa</span><span class="p">.</span><span class="n">Column</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sa</span><span class="p">.</span><span class="n">Integer</span><span class="p">(),</span><span class="w"> </span><span class="n">primary_key</span><span class="o">=</span><span class="kr">True</span><span class="p">,</span><span class="w"> </span><span class="nf">index</span><span class="o">=</span><span class="kr">True</span><span class="p">),</span><span class="w">  </span>
+<span class="w">        </span><span class="n">sa</span><span class="p">.</span><span class="n">Column</span><span class="p">(</span><span class="s">&quot;author&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sa</span><span class="p">.</span><span class="n">String</span><span class="p">(</span><span class="mi">50</span><span class="p">),</span><span class="w"> </span><span class="n">nullable</span><span class="o">=</span><span class="kr">False</span><span class="p">),</span><span class="w">  </span>
+<span class="w">        </span><span class="n">sa</span><span class="p">.</span><span class="n">Column</span><span class="p">(</span><span class="s">&quot;content&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sa</span><span class="p">.</span><span class="n">String</span><span class="p">(</span><span class="mi">200</span><span class="p">)),</span><span class="w">  </span>
+<span class="w">        </span><span class="n">sa</span><span class="p">.</span><span class="n">Column</span><span class="p">(</span><span class="s">&quot;timestamp&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sa</span><span class="p">.</span><span class="n">TIMESTAMP</span><span class="p">,</span><span class="w"> </span><span class="n">server_default</span><span class="o">=</span><span class="n">sa</span><span class="p">.</span><span class="n">func</span><span class="p">.</span><span class="n">now</span><span class="p">()),</span><span class="w">  </span>
+<span class="w">    </span><span class="p">)</span>
+</code></pre></div>
+
+<p>In the above code, we are creating a new table named  <code>reviews</code><br>
+which has the following columns:</p>
+<ul>
+<li><code>id</code>  : An Integer type field for primary_key data of each row.</li>
+<li><code>author</code>  : This column stores the author of the review and is defined as a  <code>String(50)</code>  type. It means that the column value can’t exceed the length of 50 characters.</li>
+<li><code>content</code>  : Another String field which stores the actual review content. This column cannot exceed the character length of 200.</li>
+<li><code>timestamp</code>  : A field with default value of the current timestamp which signifies the date time when a particular review was created.</li>
+</ul>
+<p>As stated above, we should always write the  <code>downgrade</code> function in order to revert the changes done by  <code>upgrade</code> function. Write the following code in the  <code>downgrade</code> function:</p>
+<div class="highlight"><pre><span></span><code><span class="n">def</span><span class="w"> </span><span class="n">downgrade</span><span class="p">()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">None</span><span class="o">:</span><span class="w">  </span>
+<span class="w">    </span><span class="n">op</span><span class="p">.</span><span class="n">drop_table</span><span class="p">(</span><span class="s">&#39;reviews&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>The above code is pretty self-explainatory, we are just removing the table ‘reviews’ that we created in  <code>upgrade</code> function.</p>
+<h2>Applying the Migration</h2>
+<p>To apply the migration, first copy the hash value from the migration file and then open your terminal and run the following command:</p>
+<div class="highlight"><pre><span></span><code>alembic upgrade &lt;hash_value&gt;
+</code></pre></div>
+
+<p>Once you’ve executed the provided command, you’ll receive a confirmation message in your terminal indicating that the latest migration has been successfully applied, resulting in the creation of the new “reviews” table. However, as our FastAPI application currently lacks any endpoints that query the “reviews” table, you won’t be able to observe these changes directly from the application.</p>
+<p>To inspect the changes, we’ll utilize an SQL Viewer Tool. Simply open the SQL Viewer Tool in your browser. Upon loading the page, you’ll notice a “Drop Here” text. Click on it and navigate to your project directory, where you’ll find the database file named ‘books.sqlite3’. Select this database file, and the SQL tool will read all the tables within it. You’ll then be able to view all the tables available in the dropdown menu within the tool’s interface. This allows you to inspect the newly created “reviews” table and any other tables present in your database.</p>
+<p><img alt="" src="https://miro.medium.com/v2/resize:fit:736/1*hDWho-RmOYJnxamj6C3eIA.png">
+In the above image you can a reviews table which currently has no rows as we haven’t populated it with data.</p>
+<h1>Downgrade with Alembic</h1>
+<p>Downgrading with Alembic is straightforward. Simply enter the downgrade command along with the identifier of the desired state in the terminal. Alembic will automatically handle all the necessary steps to revert your application to the specified state.</p>
+<p>Alembic supports  <code>alembic downgrade &lt;hashvalue&gt;</code>  syntax, but the more common (and easier) way to downgrade the application involves relative identifiers using the -N and +N syntax. Let’s do it practically to understand how it works. Open your terminal and type the following command:</p>
+<div class="highlight"><pre><span></span><code>alembic downgrade -1
+</code></pre></div>
+
+<p>The above command instructs Alembic to take the database to a state one step previous from the current state. In other words it reverts the last applied migration to the database. Naturally, when you put -2 instead of -1 it reverts the last two migration and so on.</p>
+<p>After executing the command, you’ll receive a confirmation message in the terminal indicating that the downgrade operation ran successfully. To verify this, you can open the SQLite Viewer Tool and upload the database again. Upon inspection, you’ll notice that the dropdown menu displaying all the tables no longer includes the ‘reviews’ table. This confirms that the database has indeed been reverted back to its previous state.
+<img alt="" src="https://miro.medium.com/v2/resize:fit:754/1*_RBvF11X8dG4ZUxT7DLH0Q.png">
+You can also see in the above image that there is no review table in the database. Make sure to reupload the database to the viewer tool in order for them to reflect in your browser.</p>
+<h1>Conclusion</h1>
+<p>Alembic is a really powerful tool to add database migration using SQLAlchemy. It make migration process more intuitve, easy and secure. Developers can easily manage and rollback to a different state in the database with ease. Alembic also supports operation like Batch processing, raw sql execution, adding constraints and much more. You can read about all the operations provided by Alembic in the  <a href="https://alembic.sqlalchemy.org/en/latest/index.html">Documentation</a>.</p>
+<p>In this tutorial you learnt about Alembic and how you can use it in your python projects to easily manage your database. You learnt upgrading and downgrading in Alembic, creating columns, tables and and reverting changes. With these functionalities Alembic becomes a must-have when working with Python/SQLAlchemy project in order to easily manage your database.</p>
+<p>Hope you like the tutorial, in case you have any question, shoot them in the comments. I will try my best to answer them.</p>
+            </div>
+        </div>
+    </div>
+
+</section>
+<footer>
+    <div class=" container">
+        <p>&copy; 2023 vivekthedev. &nbsp;
+            Powered by <a href="https://getpelican.com/">Pelican</a></p>
+    </div>
+</footer>
+</body>
+
+</html>
